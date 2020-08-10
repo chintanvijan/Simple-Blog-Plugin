@@ -15,12 +15,49 @@
 	  plugins: [
 	    'advlist autolink lists link image charmap print preview anchor',
 	    'searchreplace visualblocks code fullscreen',
-	    'insertdatetime media table paste code help wordcount'
+	    'insertdatetime media table paste code help wordcount',
+	    'image'
 	  ],
 	  toolbar: 'undo redo | formatselect | ' +
 	  'bold italic backcolor | alignleft aligncenter ' +
 	  'alignright alignjustify | bullist numlist outdent indent | ' +
-	  'removeformat | help',
+	  'removeformat | help' +
+	  'image | image',
+
+	  images_upload_url : 'upload.php',
+
+
+	  images_upload_handler : function(blobInfo, success, failure) {
+	  			var xhr, formData;
+
+	  			xhr = new XMLHttpRequest();
+	  			xhr.withCredentials = false;
+	  			xhr.open('POST', 'upload.php');
+
+	  			xhr.onload = function() {
+	  				var json;
+
+	  				if (xhr.status != 200) {
+	  					failure('HTTP Error: ' + xhr.status);
+	  					return;
+	  				}
+
+	  				json = JSON.parse(xhr.responseText);
+
+	  				if (!json || typeof json.file_path != 'string') {
+	  					failure('Invalid JSON: ' + xhr.responseText);
+	  					return;
+	  				}
+
+	  				success(json.file_path);
+	  			};
+
+	  			formData = new FormData();
+	  			formData.append('file', blobInfo.blob(), blobInfo.filename());
+
+	  			xhr.send(formData);
+	  		},
+
 	  content_css: '//www.tiny.cloud/css/codepen.min.css'
 	});
 </script>
@@ -35,7 +72,9 @@
 			<?php 
 			if(isset($message)){
 			 echo $message; } ?>
-			
+			<input type="text" name="author" placeholder="Author" class="form-control mb-3">
+			<input type="date" name="publishing-date" placeholder="Publishing Date" class="form-control mb-3">
+			<input type="text" name="category" placeholder="Category" class="form-control mb-3">
 			<input type="text" name="title" placeholder="Title" class="form-control mb-3">
 			<input type="text" name="meta-title" placeholder="Meta Title" class="form-control mb-3">
 			<textarea rows="5" placeholder="Meta Description" name="meta-desc" class="form-control mb-3"></textarea>
